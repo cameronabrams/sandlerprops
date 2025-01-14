@@ -16,7 +16,7 @@ classifiers = [
 ]
 dependencies = [
     "pandas",
-    "numpy
+    "numpy"
 ]
 [tool.pytest.ini_options]
 log_cli = true
