@@ -20,10 +20,26 @@ pip install sandlerprops
 190.4
 >>> p.U.Tc
 'K'
+>>> e=P.get_compound('ethanz')
+ethanz not found.  Here are similars:
+ethane
+methane
+ethanol
+methanol
+ethyl amine
+ethylene
+methylal
+methyl amine
+ethylbenzene
+nitromethane
 ```
 
 ## Release History
 
+* 0.0.3
+    * returns similar names found in database if requested name is not found
+* 0.0.2
+    * Updated dependencies
 * 0.0.1
     * Initial version
 
