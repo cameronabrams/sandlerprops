@@ -7,6 +7,21 @@
 pip install sandlerprops
 ```
 
+## Usage example
+
+```python
+>>> from sandlerprops.properties import Properties as P
+>>> m=P.get_compound('methane')
+>>> m.Molwt
+16.043
+>>> p.U.Molwt
+'g/mol'
+>>> m.Tc
+190.4
+>>> p.U.Tc
+'K'
+```
+
 ## Release History
 
 * 0.0.1
