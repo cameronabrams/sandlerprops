@@ -1,10 +1,4 @@
 # Author: Cameron F. Abrams, <cfa22@drexel.edu>
-
-
-import logging
-import os
-import shutil
-
 import argparse as ap
 
 from .properties import PropertiesDatabase
