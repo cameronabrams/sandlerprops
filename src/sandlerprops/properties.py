@@ -48,7 +48,7 @@ class PropertiesDatabase:
         unitdict = {k: v for k,v in zip(self.properties, unitlist)}
         self.U = Namespace(**unitdict)
 
-    def show_properties(self, args: Namespace):
+    def show_properties(self, args: Namespace = None):
         for p in self.properties:
             unit = self.U.__dict__[p]
             if unit != '':
