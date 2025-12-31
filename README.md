@@ -27,35 +27,35 @@ nitromethane
 deutromethane
 methyl silane
 dimethylamine
-$ sandlerprops show methane
-Properties for methane (index 116):
-  No: 116
-  Formula: CH4
-  Name: methane
-  Molwt: 16.043 g/mol
-  Tfp: 90.7 K
-  Tb: 111.6 K
-  Tc: 190.4 K
-  Pc: 46.0 bar
-  Vc: 99.2 m3/mol
-  Zc: 0.288
-  Omega: 0.011
-  Dipm: 0.0
-  CpA: 19.25 J/mol-K
-  CpB: 0.05213 J/mol-K2
-  CpC: 1.197e-05 J/mol-K3
-  CpD: -1.132e-08 J/mol-K4
-  dHf: -74900.0 J/mol
-  dGf: -50870.0 J/mol
-  Eq: 1
-  VpA: -6.00435
-  VpB: 1.1185
-  VpC: -0.83408
-  VpD: -1.22833
-  Tmin: 91.0 K
-  Tmax: 190.4 K
-  Lden: 0.425
-  Tden: 112.0
+$ sandlerprops show benzene
+Properties of benzene (index 343):
+  No        : 343
+  Formula   : C6H6
+  Name      : benzene
+  Molwt     :  78.114    g/mol
+  Tfp       :  278.7     K
+  Tb        :  353.2     K
+  Tc        :  562.2     K
+  Pc        :  48.90     bar
+  Vc        :  259.000   m3/mol
+  Zc        :  0.271
+  Omega     :  0.212
+  Dipm      : 0
+  CpA       : -33.92     J/mol-K
+  CpB       :  0.4739    J/mol-K2
+  CpC       : -3.0170e-04 J/mol-K3
+  CpD       :  7.1300e-08 J/mol-K4
+  dHf       :  82980.0   J/mol
+  dGf       :  129700.0  J/mol
+  Eq        : 1
+  VpA       : -6.98273
+  VpB       :  1.33213
+  VpC       : -2.62863
+  VpD       : -3.33399
+  Tmin      :  288.0     K
+  Tmax      :  562.2     K
+  Lden      :  0.885
+  Tden      :  289.0
 ```
 
 ### API
@@ -87,6 +87,8 @@ nitromethane
 
 ## Release History
 
+* 0.2.1
+    * updated formatting
 * 0.1.0
     * command-line interface
 * 0.0.3
