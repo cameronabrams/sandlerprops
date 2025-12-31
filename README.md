@@ -61,15 +61,16 @@ Properties of benzene (index 343):
 ### API
 
 ```python
->>> from sandlerprops.properties import Properties as P
+>>> from sandlerprops.properties import PropertiesDatabase
+>>> P = PropertiesDatabase()
 >>> m = P.get_compound('methane')
 >>> m.Molwt
 16.043
->>> p.U.Molwt
+>>> P.U.Molwt
 'g/mol'
 >>> m.Tc
 190.4
->>> p.U.Tc
+>>> P.U.Tc
 'K'
 >>> e = P.get_compound('ethanz')
 ethanz not found.  Here are similars:
@@ -87,7 +88,7 @@ nitromethane
 
 ## Release History
 
-* 0.2.1
+* 0.2.2
     * updated formatting
 * 0.1.0
     * command-line interface
