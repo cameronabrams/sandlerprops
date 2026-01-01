@@ -201,4 +201,13 @@ class PropertiesDatabase:
             for n in top_sorted_names:
                 print(n)
         return Compound(Name=name, Formula=name)
-        
+
+
+_instance = None
+
+def get_database():
+    """Get or create the singleton database instance."""
+    global _instance
+    if _instance is None:
+        _instance = PropertiesDatabase()
+    return _instance

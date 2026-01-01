@@ -88,6 +88,8 @@ nitromethane
 
 ## Release History
 
+* 0.3.1
+    * set preferred atom ordering so that H comes right after C
 * 0.3.0
     * Introduced `Compound` class for data returns
     * Corrected three typos in the original database

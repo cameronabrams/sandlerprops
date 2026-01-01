@@ -1,10 +1,10 @@
-from sandlerprops.properties import PropertiesDatabase
+from sandlerprops.properties import PropertiesDatabase, get_database
 import unittest
 
 class Test_db(unittest.TestCase):
    def setUp(self):
-      P=PropertiesDatabase()
-      self.P=P
+      P = get_database()
+      self.P = P
 
    def test_read(self):
       expected_columns=['No','Formula', 'Name', 'Molwt', 'Tfp', 'Tb', 'Tc', 'Pc',
@@ -29,7 +29,7 @@ class Test_db(unittest.TestCase):
 
    def test_get_valeraldehyde(self):
       valeraldehyde = self.P.get_compound('valeraldehyde')
-      self.assertEqual(valeraldehyde.Formula, 'C5OH10') # makes sure zero is not replaced by O
+      self.assertEqual(valeraldehyde.Formula, 'C5H10O') # makes sure zero is not replaced by O
       self.assertEqual(valeraldehyde.atomdict, {'C':5,'H':10,'O':1})
 
    def test_get_nonexistent(self):

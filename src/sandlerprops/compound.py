@@ -1,3 +1,4 @@
+import numpy as np
 from dataclasses import dataclass, field
 
 @dataclass
@@ -81,11 +82,21 @@ class Compound:
 
     @property
     def Cp(self):
-        """ Returns ideal gas heat capacity coefficients as a list """
-        return [self.CpA, self.CpB, self.CpC, self.CpD]
+        """ Returns ideal gas heat capacity coefficients as a numpy array """
+        return np.array([self.CpA, self.CpB, self.CpC, self.CpD])
 
     def _reorder_elements(self):
-        my_order_preference = ['C', 'O', 'N', 'H', 'Na', 'K', 'Ca', 'F', 'Cl', 'Br', 'I']
+        leave_these_alone = ['NH3', 'CH3OH', 
+                             'Fe','He','Li','Be','Ne','Na','Mg','Al','Si','Cl','Ar','Ca','Sc',
+                             'Ti','Cr','Mn','Co','Ni','Cu','Zn','Ga','Ge','As','Se','Br','Kr',
+                             'Rb','Sr','Y','Zr','Nb','Mo','Tc','Ru','Rh','Pd','Ag','Cd','In',
+                             'Sn','Sb','Te','I','Xe','Cs','Ba','La','Ce','Pr','Nd','Pm','Sm',
+                             'Eu','Gd','Tb','Dy','Ho','Er','Tm','Yb','Lu','Hf','Ta','W','Re',
+                             'Os','Ir','Pt','Au','Hg','Tl','Pb','Bi','Po','At','Rn','Fr','Ra',
+                             'Ac','Th','Pa','U']
+        if self.Formula in leave_these_alone:
+            return
+        my_order_preference = ['C', 'H', 'O', 'N', 'Na', 'K', 'Ca', 'F', 'Cl', 'Br', 'I']
         A = self.atomdict.copy()
         ef = ''
         for a in my_order_preference:
