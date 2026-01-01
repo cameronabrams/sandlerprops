@@ -22,9 +22,9 @@ banner = """
        ░███                         ░███                        
        █████                        █████                       
       ░░░░░                        ░░░░░              
-
         (c) 2025, Cameron F. Abrams <cfa22@drexel.edu> 
 """
+
 def cli():
     P = PropertiesDatabase()
     subcommands = {
@@ -43,6 +43,8 @@ def cli():
     }
     parser = ap.ArgumentParser(
         prog='sandlerprops',
+        description='sandlerprops -- Sandler Properties Database CLI',
+        epilog='(c) 2025 Cameron F. Abrams <cfa22@drexel.edu>'
     )
     parser.add_argument(
         '-b',

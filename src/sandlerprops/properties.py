@@ -3,12 +3,19 @@
 import pandas as pd
 import numpy as np
 
-from argparse import Namespace
+import argparse as ap
 from difflib import SequenceMatcher
 from importlib.resources import files
 
+from .compound import Compound
+
 class PropertiesDatabase:
-    datafile_path = files('sandlerprops.resources').joinpath('data','properties_database.csv')
+    resources_root = files('sandlerprops') / 'resources'
+    """ Root directory for resource files. """
+    data_dir = resources_root / 'data'
+    """ Directory for data files. """
+    datafile_path = data_dir / 'properties_database.csv'
+    """ Path to the properties database CSV file. """
     def __init__(self):
         D = pd.read_csv(self.datafile_path, header=0, index_col=None)
         self.D = D.rename(columns={
@@ -16,6 +23,8 @@ class PropertiesDatabase:
             'Tb (K)': 'Tb',
             'Tc (K)': 'Tc',
             'Pc (bar)': 'Pc'})
+        if self._swap_zeros_for_Os_in_Formulas() > 0:
+            raise ValueError('Some formulas had 0 replaced with O; please verify correctness.')
         unitlist = [
             '', # no. (unique)
             '', # formula
@@ -75,10 +84,46 @@ class PropertiesDatabase:
         self.properties = list(self.D.columns)
         unitdict = {k: v for k,v in zip(self.properties, unitlist)}
         formatterdict = {k: v for k,v in zip(self.properties, formatters)}
-        self.U = Namespace(**unitdict)
-        self.F = Namespace(**formatterdict)
+        self.U = ap.Namespace(**unitdict)
+        self.F = ap.Namespace(**formatterdict)
 
-    def show_properties(self, args: Namespace = None):
+    def _swap_zeros_for_Os_in_Formulas(self):
+        """
+        Internal method to replace zeros with capital 'O's in the Formula column of the DataFrame.
+        However, we can only do this if either of these conditions are met:
+        1. The zero is the first character in the Formula
+        2. The zero is preceded by a letter (not another digit)
+        """
+        num_corrections = 0
+        formulas = self.D['Formula'].to_list()
+        for i, formula in enumerate(formulas):
+            trigger = False
+            new_formula_chars = []
+            for j, char in enumerate(formula):
+                if char == '0':
+                    if j == 0 or (j > 0 and not formula[j-1].isdigit()):
+                        trigger = True
+                        new_formula_chars.append('O')
+                    else:
+                        new_formula_chars.append('0')
+                else:
+                    new_formula_chars.append(char)
+            new_formula = ''.join(new_formula_chars)
+            if trigger:
+                num_corrections += 1
+                print(f'Corrected Formula from {formula} to {new_formula}')
+            self.D.at[i, 'Formula'] = new_formula
+        return num_corrections
+    
+    def show_properties(self, args: ap.Namespace = None):
+        """ 
+        Subcommand handler that displays the list of available properties with their units.
+        
+        Parameters
+        ----------
+        args : argparse.Namespace, optional
+            Not used; present for compatibility since this is a subcommand handler.
+        """
         for p in self.properties:
             unit = self.U.__dict__[p]
             if unit:
@@ -87,13 +132,29 @@ class PropertiesDatabase:
             else:
                 print(f'{fmted}')
 
-    def find_compound(self, args: Namespace):
+    def find_compound(self, args: ap.Namespace):
+        """
+        Subcommand handler that looks for a compound by name and displays if found.
+        
+        Parameters
+        ----------
+        args : argparse.Namespace
+            Must contain attribute 'compound_name' with the name of the compound to find.
+        """
         compound_name = args.compound_name
         record = self.get_compound(compound_name)
         if record is not None:
             print(f'Found exact match: {record.Name} (index {record.No})')
 
-    def show_compound_properties(self, args: Namespace):
+    def show_compound_properties(self, args: ap.Namespace):
+        """
+        Subcommand handler that displays all properties of a specified compound.
+        
+        Parameters
+        ----------
+        args : argparse.Namespace
+            Must contain attribute 'compound_name' with the name of the compound to display.    
+        """
         compound_name = args.compound_name
         record = self.get_compound(compound_name)
         if record is not None:
@@ -107,13 +168,29 @@ class PropertiesDatabase:
                 else:
                     print(f'  {p:<10s}: {formatted_value}')
 
-    def get_compound(self, name, near_matches=10):
+    def get_compound(self, name: str, near_matches: int = 10):
+        """ 
+        Retrieves a **Compound** by name. If not found, suggests similar names and returns
+        an unpopulated **Compound** object with name and Formula set to input name.
+        
+        Parameters
+        ----------
+        name : str
+            Name of the compound to retrieve
+        near_matches : int
+            Number of similar names to suggest if exact match not found
+        
+        Returns
+        -------
+        **Compound**
+            The **Compound** object if found, else an empty **Compound** with name and Formula set.
+        """
         row = self.D[self.D['Name'] == name]
         if not row.empty:
             d = row.to_dict('records')[0]
-            return Namespace(**d)
+            return Compound(**d)
         else:
-            print(f'{name} not found.  Here are similars:')
+            print(f'{name} not found; empty Compound object returned.  Here are similars:')
             scores = []
             for n in self.D['Name']:
                 scores.append(SequenceMatcher(None, name, n).ratio())
@@ -123,6 +200,5 @@ class PropertiesDatabase:
             top_sorted_names = sorted_names[-near_matches:][::-1]
             for n in top_sorted_names:
                 print(n)
-        return None
+        return Compound(Name=name, Formula=name)
         
-# Properties = PropertiesDatabase()

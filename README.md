@@ -88,6 +88,9 @@ nitromethane
 
 ## Release History
 
+* 0.3.0
+    * Introduced `Compound` class for data returns
+    * Corrected three typos in the original database
 * 0.2.2
     * updated formatting
 * 0.1.0
