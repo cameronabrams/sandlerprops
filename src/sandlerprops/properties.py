@@ -53,6 +53,35 @@ class PropertiesDatabase:
             'K', # vapor pressure temperature range max
             '', # liquid density at Tden
             ''] # liquid density temperature for reference
+        descriptions = [
+            'Unique compound number',
+            'Empirical formula',
+            'Unique compound name',
+            'Molecular weight in g/mol',
+            'Triple point temperature in K',
+            'Boiling point temperature in K',
+            'Critical temperature in K',
+            'Critical pressure in bar',
+            'Critical volume in m3/mol',
+            'Critical compressibility',
+            'Acentric factor',
+            'DIPM',
+            'Ideal gas heat capacity coeff 1',
+            'Ideal gas heat capacity coeff 2',
+            'Ideal gas heat capacity coeff 3',
+            'Ideal gas heat capacity coeff 4',
+            'Ideal gas enthalpy of formation at 298.15 K',
+            'Ideal gas entropy of formation at 298.15 K   ',
+            'Vapor pressure equation type number',
+            'Vapor pressure coeff 1',
+            'Vapor pressure coeff 2',
+            'Vapor pressure coeff 3',
+            'Vapor pressure coeff 4',
+            'Vapor pressure temperature range min',
+            'Vapor pressure temperature range max',
+            'Liquid density at Tden',
+            'Temperature at which liquid density is measured'
+        ]
         formatters = [
             '{:<10d}', # no. (unique)
             '{:<s}', # formula
@@ -82,10 +111,13 @@ class PropertiesDatabase:
             '{:< 10.3f}', # liquid density at Tden
             '{:< 10.1f}'] # liquid density temperature for reference
         self.properties = list(self.D.columns)
-        unitdict = {k: v for k,v in zip(self.properties, unitlist)}
-        formatterdict = {k: v for k,v in zip(self.properties, formatters)}
-        self.U = ap.Namespace(**unitdict)
-        self.F = ap.Namespace(**formatterdict)
+        self.metadata = {}
+        for p, u, f, d in zip(self.properties, unitlist, formatters, descriptions):
+            self.metadata[p] = {
+                'unit': u,
+                'formatter': f,
+                'description': d
+            }
 
     def _swap_zeros_for_Os_in_Formulas(self):
         """
@@ -124,13 +156,13 @@ class PropertiesDatabase:
         args : argparse.Namespace, optional
             Not used; present for compatibility since this is a subcommand handler.
         """
+        header = ['Property', 'Units', 'Description']
+        print(f'{header[0]:>10s} {header[1]:>10s}   {header[2]}')
+        print('-'*50)
         for p in self.properties:
-            unit = self.U.__dict__[p]
-            if unit:
-                fmted = self.F.__dict__[p].format(p)
-                print(f'{fmted} ({unit})')
-            else:
-                print(f'{fmted}')
+            unit = self.metadata[p]['unit']
+            description = self.metadata[p]['description']
+            print(f'{p:>10s} {unit:>10s}   {description}')
 
     def find_compound(self, args: ap.Namespace):
         """
@@ -143,7 +175,7 @@ class PropertiesDatabase:
         """
         compound_name = args.compound_name
         record = self.get_compound(compound_name)
-        if record is not None:
+        if record.No != 0:
             print(f'Found exact match: {record.Name} (index {record.No})')
 
     def show_compound_properties(self, args: ap.Namespace):
@@ -159,10 +191,12 @@ class PropertiesDatabase:
         record = self.get_compound(compound_name)
         if record is not None:
             print(f'Properties of {record.Name} (index {record.No}):')
+            print('-'*40)
             for p in self.properties:
-                value = record.__dict__[p]
-                unit = self.U.__dict__[p]
-                formatted_value = self.F.__dict__[p].format(value)
+                value = getattr(record, p)
+                unit = self.metadata[p]['unit']
+                formatter = self.metadata[p]['formatter']
+                formatted_value = formatter.format(value)
                 if unit:
                     print(f'  {p:<10s}: {formatted_value} {unit}')
                 else:
@@ -190,7 +224,7 @@ class PropertiesDatabase:
             d = row.to_dict('records')[0]
             return Compound(**d)
         else:
-            print(f'{name} not found; empty Compound object returned.  Here are similars:')
+            print(f'{name} not found.  Here are similars:')
             scores = []
             for n in self.D['Name']:
                 scores.append(SequenceMatcher(None, name, n).ratio())
@@ -202,11 +236,17 @@ class PropertiesDatabase:
                 print(n)
         return Compound(Name=name, Formula=name)
 
-
 _instance = None
 
 def get_database():
-    """Get or create the singleton database instance."""
+    """
+    Get or create the singleton database instance.
+    
+    Returns
+    -------
+    **PropertiesDatabase**
+        The singleton instance of the properties database.
+    """
     global _instance
     if _instance is None:
         _instance = PropertiesDatabase()

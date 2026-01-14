@@ -109,24 +109,47 @@ class Compound:
             ef += f'{e}{c}'
         self.Formula = ef
 
-''' a bunch of functions that permit conversion of an empirical formula into
-    an element:count dictionary '''
-# per https://stackoverflow.com/users/5079316/olivier-melan%c3%a7on
 
-def _push(obj,l,depth):
+def _push(obj: any, l: list, depth: int):
+    """
+    push an object onto a nested list at a given depth 
+    (source: https://stackoverflow.com/users/5079316/olivier-melan%c3%a7on)
+    
+    Parameters
+    ----------
+    obj : any
+        object to push
+    l : list
+        list to push onto
+    depth : int
+        depth at which to push
+    """
     while depth:
         l = l[-1]
         depth -= 1
     l.append(obj)
 
-def _parse_parentheses(s):
-    ''' byte-wise de-nestify a string with parenthesis '''
+def _parse_parentheses(s: str) -> list:
+    """
+    byte-wise de-nestify a string with parenthesis
+    (source: https://stackoverflow.com/users/5079316/olivier-melan%c3%a7on)
+
+    Parameters
+    ----------
+    s : str
+        string to de-nestify
+
+    Returns
+    -------
+    list
+        nested list representing the de-nestified string
+    """
     groups = []
     depth = 0
     try:
-        i=0
-        while i<len(s):
-            char=s[i]
+        i = 0
+        while i < len(s):
+            char = s[i]
             if char == '(':
                 _push([], groups, depth)
                 depth += 1
@@ -134,7 +157,7 @@ def _parse_parentheses(s):
                 depth -= 1
             else:
                 _push(char, groups, depth)
-            i+=1
+            i += 1
     except IndexError:
         raise ValueError('Parentheses mismatch')
     if depth != 0:
@@ -142,71 +165,145 @@ def _parse_parentheses(s):
     else:
         return groups
 
-def bankblock(B,b):
-    if len(b[0])>0: # bank this block
+def bankblock(B: list, b: list):
+    """
+    bank a block into the list of blocks if it is non-empty
+    (source: https://stackoverflow.com/users/5079316/olivier-melan%c3%a7on)
+
+    Parameters
+    ----------
+    B : list
+        list of blocks
+    b : list
+        block to bank
+    """
+    if len(b[0]) > 0: # bank this block
         if not any(isinstance(i, list) for i in b[0]):
-            b[0]=''.join(b[0])
-        nstr=''.join(b[1])
-        b[1]=1 if len(nstr)==0 else int(nstr)
+            b[0] = ''.join(b[0])
+        nstr = ''.join(b[1])
+        b[1] = 1 if len(nstr) == 0 else int(nstr)
         B.append(b)
 
-def blockify(bl):
-    ''' parse the byte_levels returned from the byte-wise de-nester into blocks, where
-        a block is a two-element list, where first element is a block and second is 
-        an integer subscript >= 1.  A "primitive" block is one in which the first
-        element is not a list, but instead a string that indentifies a chemical element. '''
-    blocks=[]
-    curr_block=[[],[]]
+def blockify(bl: list) -> list:
+    """
+    parse the byte_levels returned from the byte-wise de-nester into blocks, where
+    a block is a two-element list, where first element is a block and second is 
+    an integer subscript >= 1.  A "primitive" block is one in which the first
+    element is not a list, but instead a string that indentifies a chemical element.
+    (source: https://stackoverflow.com/users/5079316/olivier-melan%c3%a7on)
+
+    Parameters
+    ----------
+    bl : list
+        byte_levels list to parse
+
+    Returns
+    -------
+    list
+        list of blocks
+    """
+    blocks = []
+    curr_block = [[], []]
     for b in bl:
-        if len(b)==1:
+        if len(b) == 1:
             if b.isalpha():
                 if b.isupper(): # new block
-                    bankblock(blocks,curr_block)
-                    curr_block=[[b],[]]
+                    bankblock(blocks, curr_block)
+                    curr_block = [[b], []]
                 else: # still building this block's elem name
                     curr_block[0].append(b)
             elif b.isdigit():
                 curr_block[1].append(b)
         else:
-            bankblock(blocks,curr_block)
-            curr_block=[blockify(b),[]]
-    bankblock(blocks,curr_block)
+            bankblock(blocks, curr_block)
+            curr_block = [blockify(b), []]
+    bankblock(blocks, curr_block)
     return blocks
 
-def flattify(B):
-    ''' distribute the block counts inward '''
+def flattify(B: list) -> None:
+    """
+    recursively flatten nested blocks in place
+    (source: https://stackoverflow.com/users/5079316/olivier-melan%c3%a7on)
+
+    Parameters
+    ----------
+    B : list
+        list of blocks to flattify
+    """
     for b in B:
-        if isinstance(b[0],str) or b[1]==1: # already flat
+        if isinstance(b[0], str) or b[1] == 1: # already flat
             pass
         else:
-            m=b[1]
-            b[1]=1
+            m = b[1]
+            b[1] = 1
             for bb in b[0]:
-                bb[1]*=m
+                bb[1] *= m
                 flattify(b[0])
 
-def my_flatten(L,size=(2)):
-    ''' flatten '''
-    flatlist=[]
+def my_flatten(L: list, size: tuple = (2)):
+    """
+    recursively flatten a nested list of blocks into a flat list of element:number pairs
+    (source: https://stackoverflow.com/users/5079316/olivier-melan%c3%a7on)
+
+    Parameters
+    ----------
+    L : list
+        nested list of blocks to flatten
+    size : tuple, optional
+        size of the element:number pairs, by default (2)
+
+    Returns
+    -------
+    list
+        flat list of element:number pairs
+    """
+    flatlist = []
     for i in L:
-        if not isinstance(i[0],list):
+        if not isinstance(i[0], list):
             flatlist.append(i)
         else:
-            newlist=my_flatten(i[0])
+            newlist = my_flatten(i[0])
             flatlist.extend(newlist)
     return flatlist
 
-def reduce(L):
-    ''' produce a dictionary of element:number '''
-    result_dict={}
+def reduce(L: list) -> dict:
+    """ 
+    reduce a flat list of element:number pairs into a dictionary of element:number items
+    (source: https://stackoverflow.com/users/5079316/olivier-melan%c3%a7on)
+    
+    Parameters
+    ----------
+    L : list
+        flat list of element:number pairs
+
+    Returns
+    -------
+    dict
+        dictionary of element:number items
+    """
+    result_dict = {}
     for i in L:
         if i[0] in result_dict:
-            result_dict[i[0]]+=i[1]
+            result_dict[i[0]] += i[1]
         else:
-            result_dict[i[0]]=i[1]
+            result_dict[i[0]] = i[1]
     return result_dict
 
-def parse_empirical_formula(ef):
-    block_levels=blockify(_parse_parentheses(ef))
+def parse_empirical_formula(ef: str) -> dict:
+    """
+    parse an empirical formula into a dictionary of element:number items
+    (source: https://stackoverflow.com/users/5079316/olivier-melan%c3%a7on)
+
+    Parameters
+    ----------
+    ef : str
+        empirical formula string
+
+    Returns
+    -------
+    dict
+        dictionary of element:number items
+    """
+    block_levels = blockify(_parse_parentheses(ef))
     flattify(block_levels)
     return reduce(my_flatten(block_levels))
