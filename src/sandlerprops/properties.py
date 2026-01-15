@@ -6,16 +6,31 @@ import numpy as np
 import argparse as ap
 from difflib import SequenceMatcher
 from importlib.resources import files
-
+from typing import ClassVar
 from .compound import Compound
+from pathlib import Path
+import pint
+
+ureg = pint.UnitRegistry(autoconvert_offset_to_baseunit = True)
 
 class PropertiesDatabase:
-    resources_root = files('sandlerprops') / 'resources'
-    """ Root directory for resource files. """
-    data_dir = resources_root / 'data'
-    """ Directory for data files. """
-    datafile_path = data_dir / 'properties_database.csv'
-    """ Path to the properties database CSV file. """
+    """
+    Properties database for thermophysical data.
+    
+    Class Attributes
+    ----------------
+    resources_root : Path
+        Root directory: ``files('sandlerprops') / 'resources'``
+    data_dir : Path
+        Data directory: ``resources_root / 'data'``
+    datafile_path : Path
+        Database CSV path: ``data_dir / 'properties_database.csv'``
+    """
+
+    resources_root: Path = files('sandlerprops') / 'resources'
+    data_dir:  Path = resources_root / 'data'
+    datafile_path: Path = data_dir / 'properties_database.csv'
+
     def __init__(self):
         D = pd.read_csv(self.datafile_path, header=0, index_col=None)
         self.D = D.rename(columns={
@@ -25,6 +40,11 @@ class PropertiesDatabase:
             'Pc (bar)': 'Pc'})
         if self._swap_zeros_for_Os_in_Formulas() > 0:
             raise ValueError('Some formulas had 0 replaced with O; please verify correctness.')
+        self.properties = list(self.D.columns)
+        self.metadata = self._build_metadata()
+
+    def _build_metadata(self):
+        metadata = {}
         unitlist = [
             '', # no. (unique)
             '', # formula
@@ -34,14 +54,14 @@ class PropertiesDatabase:
             'K', # boiling point temperature
             'K', # critical temperature
             'bar', # critical pressure
-            'm3/mol', # critical volume
+            'm**3/mol', # critical volume
             '', # critical compressibility
             '', # acentric factor
-            '', # DIPM
-            'J/mol-K', # ideal gas heat capacity coeff 1
-            'J/mol-K2', # ideal gas heat capacity coeff 2
-            'J/mol-K3', # ideal gas heat capacity coeff 3
-            'J/mol-K4', # ideal gas heat capacity coeff 4
+            'Debye', # Dipole moment
+            'J/mol*K', # ideal gas heat capacity coeff 1
+            'J/mol*K**2', # ideal gas heat capacity coeff 2
+            'J/mol*K**3', # ideal gas heat capacity coeff 3
+            'J/mol*K**4', # ideal gas heat capacity coeff 4
             'J/mol', # ideal gas enthalpy of formation at 298.15 K
             'J/mol', # ideal gas entropy of formation at 298.15 K   
             '', # vapor pressure equation type number
@@ -65,11 +85,11 @@ class PropertiesDatabase:
             'Critical volume in m3/mol',
             'Critical compressibility',
             'Acentric factor',
-            'DIPM',
-            'Ideal gas heat capacity coeff 1',
-            'Ideal gas heat capacity coeff 2',
-            'Ideal gas heat capacity coeff 3',
-            'Ideal gas heat capacity coeff 4',
+            'Dipole moment in Debye',
+            'Ideal gas heat capacity coeff 1 in J/mol*K',
+            'Ideal gas heat capacity coeff 2 in J/mol*K**2',
+            'Ideal gas heat capacity coeff 3 in J/mol*K**3',
+            'Ideal gas heat capacity coeff 4 in J/mol*K**4',
             'Ideal gas enthalpy of formation at 298.15 K',
             'Ideal gas entropy of formation at 298.15 K   ',
             'Vapor pressure equation type number',
@@ -94,7 +114,7 @@ class PropertiesDatabase:
             '{:< 10.3f}', # critical volume
             '{:< 10.3f}', # critical compressibility
             '{:< 10.3f}', # acentric factor
-            '{:<10g}', # DIPM
+            '{:< 4g}', # Dipole moment
             '{:< 10.2f}', # ideal gas heat capacity coeff 1
             '{:< 10.4f}', # ideal gas heat capacity coeff 2
             '{:< 10.4e}', # ideal gas heat capacity coeff 3
@@ -110,14 +130,13 @@ class PropertiesDatabase:
             '{:< 10.1f}', # vapor pressure temperature range max
             '{:< 10.3f}', # liquid density at Tden
             '{:< 10.1f}'] # liquid density temperature for reference
-        self.properties = list(self.D.columns)
-        self.metadata = {}
         for p, u, f, d in zip(self.properties, unitlist, formatters, descriptions):
-            self.metadata[p] = {
+            metadata[p] = {
                 'unit': u,
                 'formatter': f,
                 'description': d
             }
+        return metadata
 
     def _swap_zeros_for_Os_in_Formulas(self):
         """
@@ -179,28 +198,62 @@ class PropertiesDatabase:
             print(f'Found exact match: {record.Name} (index {record.No})')
 
     def show_compound_properties(self, args: ap.Namespace):
+        """Display all properties of a specified compound."""
+        compound_name = args.compound_name
+        compound = self.get_compound(compound_name)
+        
+        print(f'Properties of {compound.Name} (index {compound.No}):')
+        print('-'*40)
+        
+        for prop in self.D.columns:
+            value = getattr(compound, prop)
+            
+            if isinstance(value, pint.Quantity):
+                # Use Pint's formatting: specify precision for magnitude
+                print(f'  {prop:<15s}: {value:~.3f}')  # ~ = compact units, .3f = 3 decimals
+            elif isinstance(value, float):
+                print(f'  {prop:<15s}: {value:.4g}')
+            elif isinstance(value, int):
+                print(f'  {prop:<15s}: {value}')
+            else:  # str
+                print(f'  {prop:<15s}: {value}')
+
+    def get_property(self, compound_id: str | int, property_name: str, 
+                     with_units: bool = True) -> float | pint.Quantity:
         """
-        Subcommand handler that displays all properties of a specified compound.
+        Get a property value for a compound.
         
         Parameters
         ----------
-        args : argparse.Namespace
-            Must contain attribute 'compound_name' with the name of the compound to display.    
+        compound_id : str or int
+            Compound name or number
+        property_name : str
+            Property column name
+        with_units : bool
+            If True, return as Pint Quantity with units
+            
+        Returns
+        -------
+        float or :class:`pint.Quantity`
+            Property value
         """
-        compound_name = args.compound_name
-        record = self.get_compound(compound_name)
-        if record is not None:
-            print(f'Properties of {record.Name} (index {record.No}):')
-            print('-'*40)
-            for p in self.properties:
-                value = getattr(record, p)
-                unit = self.metadata[p]['unit']
-                formatter = self.metadata[p]['formatter']
-                formatted_value = formatter.format(value)
-                if unit:
-                    print(f'  {p:<10s}: {formatted_value} {unit}')
-                else:
-                    print(f'  {p:<10s}: {formatted_value}')
+        # Find the row
+        if isinstance(compound_id, str):
+            row = self.D[self.D['name'] == compound_id]
+        else:
+            row = self.D[self.D['no.'] == compound_id]
+        
+        if row.empty:
+            raise ValueError(f"Compound '{compound_id}' not found")
+        
+        # Get the value
+        value = row[property_name].values[0]
+        
+        # Return with or without units
+        if with_units and self.metadata[property_name]['unit'] is not None:
+            return value * self.metadata[property_name]['unit']
+        else:
+            return value
 
     def get_compound(self, name: str, near_matches: int = 10):
         """ 
@@ -216,13 +269,28 @@ class PropertiesDatabase:
         
         Returns
         -------
-        **Compound**
+        Compound
             The **Compound** object if found, else an empty **Compound** with name and Formula set.
         """
+            # Define which fields need units
+        unit_map = {
+            'Molwt': ureg.g / ureg.mol,
+            'Tfp': ureg.K, 'Tb': ureg.K, 'Tc': ureg.K,
+            'Pc': ureg.bar,
+            'Vc': ureg.m**3 / ureg.mol,
+            'dHf': ureg.J / ureg.mol, 'dGf': ureg.J / ureg.mol,
+            'Tmin': ureg.K, 'Tmax': ureg.K, 'Tden': ureg.K,
+            'Dipm': ureg.debye,
+        }
         row = self.D[self.D['Name'] == name]
         if not row.empty:
-            d = row.to_dict('records')[0]
-            return Compound(**d)
+            # Build and return Compound
+            kwargs = {
+                col: row[col].values[0] * unit_map[col] if col in unit_map else row[col].values[0]
+                for col in self.D.columns
+            }
+            kwargs['metadata'] = self.metadata
+            return Compound(**kwargs)
         else:
             print(f'{name} not found.  Here are similars:')
             scores = []
@@ -234,9 +302,9 @@ class PropertiesDatabase:
             top_sorted_names = sorted_names[-near_matches:][::-1]
             for n in top_sorted_names:
                 print(n)
-        return Compound(Name=name, Formula=name)
+        return Compound(Name=name, Formula=name, metadata=self.metadata)
 
-_instance = None
+_instance: PropertiesDatabase | None = None
 
 def get_database():
     """
@@ -244,8 +312,8 @@ def get_database():
     
     Returns
     -------
-    **PropertiesDatabase**
-        The singleton instance of the properties database.
+    PropertiesDatabase
+        The singleton instance of the **PropertiesDatabase**.
     """
     global _instance
     if _instance is None:

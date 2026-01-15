@@ -11,6 +11,7 @@ sandlerprops requires:
 * Python 3.7 or later
 * NumPy
 * SciPy
+* pint
 * sandlermisc (for some general utilities)
 * sandlerprops (for compound critical properties and heat-capacity data)
 

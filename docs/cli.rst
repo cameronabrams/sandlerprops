@@ -54,33 +54,33 @@ Output::
 
    Properties of methane (index 116):
    ----------------------------------------
-      No        : 116
-      Formula   : CH4
-      Name      : methane
-      Molwt     :  16.043    g/mol
-      Tfp       :  90.7      K
-      Tb        :  111.6     K
-      Tc        :  190.4     K
-      Pc        :  46.00     bar
-      Vc        :  99.200    m3/mol
-      Zc        :  0.288
-      Omega     :  0.011
-      Dipm      : 0
-      CpA       :  19.25     J/mol-K
-      CpB       :  0.0521    J/mol-K2
-      CpC       :  1.1970e-05 J/mol-K3
-      CpD       : -1.1320e-08 J/mol-K4
-      dHf       : -74900.0   J/mol
-      dGf       : -50870.0   J/mol
-      Eq        : 1
-      VpA       : -6.00435
-      VpB       :  1.11850
-      VpC       : -0.83408
-      VpD       : -1.22833
-      Tmin      :  91.0      K
-      Tmax      :  190.4     K
-      Lden      :  0.425
-      Tden      :  112.0
+      No             : 116
+      Formula        : CH4
+      Name           : methane
+      Molwt          : 16.043 g / mol
+      Tfp            : 90.700 K
+      Tb             : 111.600 K
+      Tc             : 190.400 K
+      Pc             : 46.000 bar
+      Vc             : 99.200 m ** 3 / mol
+      Zc             : 0.288
+      Omega          : 0.011
+      Dipm           : 0.000 D
+      CpA            : 19.25
+      CpB            : 0.05213
+      CpC            : 1.197e-05
+      CpD            : -1.132e-08
+      dHf            : -74900.000 J / mol
+      dGf            : -50870.000 J / mol
+      Eq             : 1
+      VpA            : -6.004
+      VpB            : 1.119
+      VpC            : -0.8341
+      VpD            : -1.228
+      Tmin           : 91.000 K
+      Tmax           : 190.400 K
+      Lden           : 0.425
+      Tden           : 112.000 K
 
 **Search by name**: Find all compounds that match "eth":
 
@@ -105,7 +105,7 @@ Output::
 Units Reference
 ---------------
 
-The CLI uses units as-provided in the database.  Below is a reference table of common properties and their units.
+The CLI uses units as-provided in the database.  Below is a reference table of common properties and their units.  Note that all quantities with units are represented as :class:`pint.Quantity` objects.
 
 =================== ==================
 Property            Unit
@@ -134,32 +134,32 @@ Syntax
 
 Output:: 
 
-   Property      Units   Description
-   --------------------------------------------------
-         No              Unique compound number
-      Formula              Empirical formula
-         Name              Unique compound name
-      Molwt      g/mol   Molecular weight in g/mol
-         Tfp          K   Triple point temperature in K
-         Tb          K   Boiling point temperature in K
-         Tc          K   Critical temperature in K
-         Pc        bar   Critical pressure in bar
-         Vc     m3/mol   Critical volume in m3/mol
-         Zc              Critical compressibility
-      Omega              Acentric factor
-         Dipm              DIPM
-         CpA    J/mol-K   Ideal gas heat capacity coeff 1
-         CpB   J/mol-K2   Ideal gas heat capacity coeff 2
-         CpC   J/mol-K3   Ideal gas heat capacity coeff 3
-         CpD   J/mol-K4   Ideal gas heat capacity coeff 4
-         dHf      J/mol   Ideal gas enthalpy of formation at 298.15 K
-         dGf      J/mol   Ideal gas entropy of formation at 298.15 K
-         Eq              Vapor pressure equation type number
-         VpA              Vapor pressure coeff 1
-         VpB              Vapor pressure coeff 2
-         VpC              Vapor pressure coeff 3
-         VpD              Vapor pressure coeff 4
-         Tmin          K   Vapor pressure temperature range min
-         Tmax          K   Vapor pressure temperature range max
-         Lden              Liquid density at Tden
-         Tden              Temperature at which liquid density is measured
+  Property      Units   Description
+  --------------------------------------------------
+        No              Unique compound number
+   Formula              Empirical formula
+      Name              Unique compound name
+     Molwt      g/mol   Molecular weight in g/mol
+       Tfp          K   Triple point temperature in K
+        Tb          K   Boiling point temperature in K
+        Tc          K   Critical temperature in K
+        Pc        bar   Critical pressure in bar
+        Vc   m**3/mol   Critical volume in m3/mol
+        Zc              Critical compressibility
+     Omega              Acentric factor
+      Dipm      Debye   Dipole moment in Debye
+       CpA    J/mol*K   Ideal gas heat capacity coeff 1 in J/mol*K
+       CpB J/mol*K**2   Ideal gas heat capacity coeff 2 in J/mol*K**2
+       CpC J/mol*K**3   Ideal gas heat capacity coeff 3 in J/mol*K**3
+       CpD J/mol*K**4   Ideal gas heat capacity coeff 4 in J/mol*K**4
+       dHf      J/mol   Ideal gas enthalpy of formation at 298.15 K
+       dGf      J/mol   Ideal gas entropy of formation at 298.15 K
+        Eq              Vapor pressure equation type number
+       VpA              Vapor pressure coeff 1
+       VpB              Vapor pressure coeff 2
+       VpC              Vapor pressure coeff 3
+       VpD              Vapor pressure coeff 4
+      Tmin          K   Vapor pressure temperature range min
+      Tmax          K   Vapor pressure temperature range max
+      Lden              Liquid density at Tden
+      Tden              Temperature at which liquid density is measured

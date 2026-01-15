@@ -1,44 +1,65 @@
 import numpy as np
 from dataclasses import dataclass, field
+import pint
+
+ureg = pint.UnitRegistry(autoconvert_offset_to_baseunit=True)
 
 @dataclass
 class Compound:
+    """Chemical compound with thermophysical properties."""
+    
+    # Identifiers (no units)
     No: int = 0
     """ Unique compound number """
     Formula: str = ''
     """ Empirical formula """
     Name: str = ''
     """ Unique compound name """
-    Molwt: float = 0.0
-    """ Molecular weight in g/mol """
-    Tfp: float = 0.0
-    """ Triple point temperature in K """
-    Tb: float = 0.0
-    """ Boiling point temperature in K """
-    Tc: float = 0.0
-    """ Critical temperature in K """
-    Pc: float = 0.0
-    """ Critical pressure in **bar** """
-    Vc: float = 0.0
-    """ Critical volume in m3/mol """
+    
+    # Basic properties with units
+    Molwt: pint.Quantity = field(default_factory=lambda: 0.0 * ureg.g / ureg.mol)
+    """ Molecular weight """
+    
+    # Temperature properties
+    Tfp: pint.Quantity = field(default_factory=lambda: 0.0 * ureg.K)
+    """ Triple point temperature """
+    Tb: pint.Quantity = field(default_factory=lambda: 0.0 * ureg.K)
+    """ Boiling point temperature """
+    Tc: pint.Quantity = field(default_factory=lambda: 0.0 * ureg.K)
+    """ Critical temperature """
+    
+    # Critical properties
+    Pc: pint.Quantity = field(default_factory=lambda: 0.0 * ureg.bar)
+    """ Critical pressure """
+    Vc: pint.Quantity = field(default_factory=lambda: 0.0 * ureg.m**3 / ureg.mol)
+    """ Critical volume """
+    
+    # Dimensionless properties
     Zc: float = 0.0
     """ Critical compressibility """
     Omega: float = 0.0
     """ Acentric factor """
-    Dipm: float = 0.0
-    """ DIPM """
+    Dipm: pint.Quantity = field(default_factory=lambda: 0.0 * ureg.debye)
+    """ Dipole moment """
+
+    # Heat capacity coefficients (stored as floats in standard basis)
+    # Cp = CpA + CpB*T + CpC*T^2 + CpD*T^3 where T is in K, result in J/(mol*K)
     CpA: float = 0.0
-    """ Ideal gas heat capacity coeff 1 """
+    """ Ideal gas heat capacity coeff (J/(mol*K)) """
     CpB: float = 0.0
-    """ Ideal gas heat capacity coeff 2 """
+    """ Ideal gas heat capacity coeff (J/(mol*K^2)) """
     CpC: float = 0.0
-    """ Ideal gas heat capacity coeff 3 """
+    """ Ideal gas heat capacity coeff (J/(mol*K^3)) """
     CpD: float = 0.0
-    """ Ideal gas heat capacity coeff 4 """
-    dHf: float = 0.0
+    """ Ideal gas heat capacity coeff (J/(mol*K^4)) """
+    
+    # Formation properties
+    dHf: pint.Quantity = field(default_factory=lambda: 0.0 * ureg.J / ureg.mol)
     """ Ideal gas enthalpy of formation at 298.15 K """
-    dGf: float = 0.0
-    """ Ideal gas entropy of formation at 298.15 K   """
+    dGf: pint.Quantity = field(default_factory=lambda: 0.0 * ureg.J / ureg.mol)
+    """ Ideal gas Gibbs energy of formation at 298.15 K """
+    
+    # Vapor pressure equation (dimensionless coefficients)
     Eq: int = 0
     """ Vapor pressure equation type number """
     VpA: float = 0.0
@@ -49,20 +70,37 @@ class Compound:
     """ Vapor pressure coeff 3 """
     VpD: float = 0.0
     """ Vapor pressure coeff 4 """
-    Tmin: float = 0.0
+    Tmin: pint.Quantity = field(default_factory=lambda: 0.0 * ureg.K)
     """ Vapor pressure temperature range min """
-    Tmax: float = 0.0
+    Tmax: pint.Quantity = field(default_factory=lambda: 0.0 * ureg.K)
     """ Vapor pressure temperature range max """
+    
+    # Liquid density
     Lden: float = 0.0
     """ Liquid density at Tden """
-    Tden: float = 0.0
+    Tden: pint.Quantity = field(default_factory=lambda: 0.0 * ureg.K)
     """ Temperature at which liquid density is measured """
+    
     charge: int = 0
     """ Net charge of the compound (not in input properties set unless encoded in Formula) """
     atomset: set = field(default_factory=set)
     """ Set of unique atom names in empirical formula """
     atomdict: dict = field(default_factory=dict)
     """ Dictionary of atomname:count items representing empirical formula """
+    metadata: dict = field(default_factory=dict)
+    """ Dictionary for storing any additional metadata passed from the database """
+
+    def get_Cp_coeffs(self) -> dict[str, float]:
+        """
+        Get ideal gas heat capacity coefficients as dict.
+        
+        Returns coefficients for: Cp = a + b*T + c*T^2 + d*T^3
+        where Cp is in J/(mol*K) and T is in K (dimensionless values).
+        """
+        return {'a': self.CpA, 'b': self.CpB, 'c': self.CpC, 'd': self.CpD}
+    
+    def __repr__(self):
+        return f"Compound(No={self.No}, Name='{self.Name}', Formula='{self.Formula}')"
 
     def __post_init__(self):
         """ dictionary of atomname:count items representing empirical formula """
@@ -84,6 +122,24 @@ class Compound:
     def Cp(self):
         """ Returns ideal gas heat capacity coefficients as a numpy array """
         return np.array([self.CpA, self.CpB, self.CpC, self.CpD])
+
+    def Cp_ideal_gas(self, T: pint.Quantity) -> pint.Quantity:
+        """
+        Calculate ideal gas heat capacity at temperature T.
+        
+        Parameters
+        ----------
+        T : Quantity
+            Temperature
+            
+        Returns
+        -------
+        Quantity
+            Heat capacity in J/(mol-K)
+        """
+        T_K = T.m_as('K')
+        Cp_val = self.CpA + self.CpB*T_K + self.CpC*T_K**2 + self.CpD*T_K**3
+        return Cp_val * ureg.J / (ureg.mol * ureg.K)
 
     def _reorder_elements(self):
         leave_these_alone = ['NH3', 'CH3OH', 

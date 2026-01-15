@@ -50,10 +50,10 @@ Basic usage from Python:
    from sandlerprops import get_database
    P = get_database()
    result = P.get_compound("methane")
-   print(f"Critical temperature: {result.Tc} K")
-   print(f"Critical pressure: {result.Pc} bar")
-   print(f"Acentric factor: {result.omega}")
-   print(f"Molecular weight: {result.Molwt} g/mol")
+   print(f"Critical temperature: {result.Tc}")
+   print(f"Critical pressure: {result.Pc}")
+   print(f"Acentric factor: {result.Omega}")
+   print(f"Molecular weight: {result.Molwt}")
    
 Contents
 --------

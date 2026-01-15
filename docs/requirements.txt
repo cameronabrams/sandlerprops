@@ -10,4 +10,6 @@ furo
 numpy>=1.20
 scipy>=1.7
 
+pint
+
 sandlerprops

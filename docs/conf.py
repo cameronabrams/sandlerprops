@@ -39,6 +39,20 @@ extensions = [
     'sphinxcontrib.mermaid',
 ]
 
+autodoc_preserve_defaults = True
+autodoc_class_signature = "separated"
+autodoc_default_options = {
+    'members': True,
+    'member-order': 'bysource',
+    'imported_members': False
+}
+
+# Only document each object once at its original location
+autodoc_inherit_docstrings = True
+autodoc_typehints = 'description'
+
+add_module_names = False
+
 # Napoleon settings for NumPy/Google style docstrings
 napoleon_google_docstring = True
 napoleon_numpy_docstring = True
@@ -176,6 +190,7 @@ intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
     'numpy': ('https://numpy.org/doc/stable/', None),
     'scipy': ('https://docs.scipy.org/doc/scipy/', None),
+    'pint': ('https://pint.readthedocs.io/en/stable/', None),
 }
 
 # -- Options for todo extension ----------------------------------------------

@@ -32,15 +32,23 @@ class Test_db(unittest.TestCase):
       self.assertEqual(valeraldehyde.Formula, 'C5H10O') # makes sure zero is not replaced by O
       self.assertEqual(valeraldehyde.atomdict, {'C':5,'H':10,'O':1})
 
+   def test_unit_conversions(self):
+      water = self.P.get_compound('water')
+      self.assertAlmostEqual(water.Molwt.m, 18.015)
+      self.assertAlmostEqual(water.Tc.m_as('K'), 647.3)
+      self.assertAlmostEqual(water.Pc.m_as('Pa'), 22120000.0)
+      self.assertAlmostEqual(water.Vc.m_as('m**3/mol'), 57.1)
+      self.assertAlmostEqual(water.dHf.m_as('kJ/mol'), -242)
+
    def test_get_nonexistent(self):
       no_cmp = self.P.get_compound('unobtainium')
       self.assertEqual(no_cmp.Name, 'unobtainium')
       self.assertEqual(no_cmp.Formula, 'unobtainium')
-      self.assertEqual(no_cmp.Molwt, 0.0)
+      self.assertEqual(no_cmp.Molwt.m, 0.0)
 
    def test_get_nonexistant_with_ef(self):
       no_cmp = self.P.get_compound('X3Y4')
       self.assertEqual(no_cmp.Formula, 'X3Y4')
       self.assertEqual(no_cmp.atomdict, {'X':3,'Y':4})
-      self.assertEqual(no_cmp.Molwt, 0.0)
+      self.assertEqual(no_cmp.Molwt.m, 0.0)
     

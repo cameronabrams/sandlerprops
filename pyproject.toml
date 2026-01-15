@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 [project]
 name = "sandlerprops"
-version = "0.4.0"
+version = "0.5.0"
 authors = [
   { name="Cameron F Abrams", email="cfa22@drexel.edu" },
 ]
@@ -16,7 +16,8 @@ classifiers = [
 ]
 dependencies = [
     "pandas",
-    "numpy"
+    "numpy",
+    "pint",
 ]
 [tool.pytest.ini_options]
 log_cli = true
