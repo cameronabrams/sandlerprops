@@ -1,8 +1,7 @@
 import numpy as np
 from dataclasses import dataclass, field
 import pint
-
-ureg = pint.UnitRegistry(autoconvert_offset_to_baseunit=True)
+from sandlermisc import ureg
 
 @dataclass
 class Compound:
