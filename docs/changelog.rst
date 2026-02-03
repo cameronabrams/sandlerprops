@@ -8,6 +8,12 @@ All notable changes to sandlerprops will be documented in this file.
 The format is based on `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_,
 and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
+[0.6.0] - 2026-02-03
+--------------------
+
+* Use pint unit registry ``ureg`` from sandlermisc.constants
+* Pvap estimatation added
+
 [0.5.0] - 2026-01-15
 --------------------
 

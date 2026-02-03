@@ -165,6 +165,20 @@ class Compound:
             ef += f'{e}{c}'
         self.Formula = ef
 
+    @property
+    def Pvap_est(self, T) -> pint.Quantity:
+        Tr = T / self.Tc
+        tau = 1 - Tr
+    
+        f0 = (-5.97616*tau + 1.29874*tau**1.5 - 0.60394*tau**2.5 
+            - 1.06841*tau**5) / Tr
+        
+        f1 = (-5.03365*tau + 1.11505*tau**1.5 - 5.41217*tau**2.5 
+            - 7.46628*tau**5) / Tr
+        
+        ln_Pr = f0 + self.omega * f1
+        
+        return self.Pc * np.exp(ln_Pr)
 
 def _push(obj: any, l: list, depth: int):
     """

@@ -8,10 +8,9 @@ from difflib import SequenceMatcher
 from importlib.resources import files
 from typing import ClassVar
 from .compound import Compound
+from sandlermisc import ureg, R
 from pathlib import Path
 import pint
-
-ureg = pint.UnitRegistry(autoconvert_offset_to_baseunit = True)
 
 class PropertiesDatabase:
     """
@@ -319,3 +318,4 @@ def get_database():
     if _instance is None:
         _instance = PropertiesDatabase()
     return _instance
+
