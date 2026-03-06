@@ -140,6 +140,29 @@ class Compound:
         Cp_val = self.CpA + self.CpB*T_K + self.CpC*T_K**2 + self.CpD*T_K**3
         return Cp_val * ureg.J / (ureg.mol * ureg.K)
 
+    def Cp_mean(self, T1: pint.Quantity, T2: pint.Quantity) -> pint.Quantity:
+        """
+        Calculate mean ideal gas heat capacity between temperatures T1 and T2.
+        
+        Parameters
+        ----------
+        T1 : Quantity
+            Lower temperature limit
+        T2 : Quantity
+            Upper temperature limit
+            
+        Returns
+        -------
+        Quantity
+            Mean heat capacity in J/(mol-K)
+        """
+        T1_K = T1.m_as('K')
+        T2_K = T2.m_as('K')
+        Cp_mean_val = (self.CpA + self.CpB*(T1_K + T2_K)/2 + 
+                       self.CpC*(T1_K**2 + T1_K*T2_K + T2_K**2)/3 + 
+                       self.CpD*(T1_K**3 + T1_K**2*T2_K + T1_K*T2_K**2 + T2_K**3)/4)
+        return Cp_mean_val * ureg.J / (ureg.mol * ureg.K)
+
     def _reorder_elements(self):
         leave_these_alone = ['NH3', 'CH3OH', 
                              'Fe','He','Li','Be','Ne','Na','Mg','Al','Si','Cl','Ar','Ca','Sc',

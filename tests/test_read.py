@@ -1,4 +1,4 @@
-from sandlerprops.properties import PropertiesDatabase, get_database
+from sandlerprops.properties import PropertiesDatabase, get_database, ureg
 import unittest
 
 class Test_db(unittest.TestCase):
@@ -52,3 +52,8 @@ class Test_db(unittest.TestCase):
       self.assertEqual(no_cmp.atomdict, {'X':3,'Y':4})
       self.assertEqual(no_cmp.Molwt.m, 0.0)
     
+   def test_cp_mean(self):
+      water = self.P.get_compound('water')
+      self.assertAlmostEqual(water.Cp_mean(298.15 * ureg.K, 373.15 * ureg.K).m_as('J/mol/K'), 33.94, places=2)
+
+      

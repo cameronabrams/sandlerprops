@@ -8,6 +8,11 @@ All notable changes to sandlerprops will be documented in this file.
 The format is based on `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_,
 and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
 
+[0.7.0] - 2026-03-06
+--------------------
+
+* Implemented Cp_mean method for calculating mean heat capacity over a temperature range
+
 [0.6.0] - 2026-02-03
 --------------------
 
